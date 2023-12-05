@@ -8,5 +8,12 @@
       <jdbc-url>jdbc:mysql://localhost:3306/advertising_agency</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="advertising_agency@localhost [2]" uuid="d520053e-240e-4324-ac33-6b6590dcf0af">
+      <driver-ref>mongo</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>com.dbschema.MongoJdbcDriver</jdbc-driver>
+      <jdbc-url>mongodb://localhost:27017/advertising_agency</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>

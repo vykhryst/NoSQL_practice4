@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS `advertising_agency`.`category`
     PRIMARY KEY (`id`)
 );
 
-INSERT INTO `category` (`name`)
+/*INSERT INTO `category` (`name`)
 VALUES ('Media Advertising'),
        ('Outdoor Advertising'),
        ('Advertising on Transport'),
@@ -26,7 +26,7 @@ VALUES ('Media Advertising'),
        ('Souvenir Advertising'),
        ('Printed Advertising'),
        ('Direct Advertising'),
-       ('Internet Advertising');
+       ('Internet Advertising');*/
 
 -- -----------------------------------------------------
 -- Table `advertising_agency`.`client`
@@ -42,11 +42,15 @@ CREATE TABLE IF NOT EXISTS `advertising_agency`.`client`
     `phone_number` VARCHAR(10)  NOT NULL,
     `email`        VARCHAR(255) NOT NULL,
     `password`     VARCHAR(255) NOT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE INDEX `phone_number_UNIQUE` (`phone_number` ASC) VISIBLE
+    PRIMARY KEY (`id`)
 );
+create index client_email_index
+    on client (email);
 
-INSERT INTO `client` (`username`, `firstname`, `lastname`, `phone_number`, `email`, `password`)
+create index client_password_index
+    on client (password);
+
+/*INSERT INTO `client` (`username`, `firstname`, `lastname`, `phone_number`, `email`, `password`)
 VALUES ('client1', 'John', 'Doe', '1234567890', 'john.doe@example.com', 'password1'),
        ('client2', 'Jane', 'Smith', '9876543210', 'jane.smith@example.com', 'password2'),
        ('client3', 'Alice', 'Johnson', '5551112233', 'alice.johnson@example.com', 'password3'),
@@ -73,7 +77,7 @@ VALUES ('client1', 'John', 'Doe', '1234567890', 'john.doe@example.com', 'passwor
        ('client24', 'Victoria', 'Brown', '1112223333', 'victoria.brown@example.com', 'password24'),
        ('client25', 'Walter', 'Davis', '2223334444', 'walter.davis@example.com', 'password25');
 
-
+*/
 -- -----------------------------------------------------
 -- Table `advertising_agency`.`advertising`
 -- -----------------------------------------------------
@@ -96,7 +100,7 @@ CREATE TABLE IF NOT EXISTS `advertising_agency`.`advertising`
             ON DELETE CASCADE
             ON UPDATE RESTRICT
 );
-
+/*
 INSERT INTO `advertising` (`category_id`, `name`, `measurement`, `unit_price`, `description`)
 VALUES (1, 'TV Advertising', 'Seconds', 100.00, 'Prime time TV slot'),
        (1, 'Radio Advertising', 'Seconds', 50.00, 'Peak hour radio slot'),
@@ -122,7 +126,7 @@ VALUES (1, 'TV Advertising', 'Seconds', 100.00, 'Prime time TV slot'),
        (6, 'Flyer Distribution', 'Per 1000', 15.00, 'Distribution of advertising flyers'),
        (7, 'SMS Marketing Campaign', 'Per Message', 0.50, 'Targeted SMS marketing campaign'),
        (8, 'Google Ads', 'Per Click', 0.50, 'Advertising on Google platform');
-
+*/
 
 -- -----------------------------------------------------
 -- Table `advertising_agency`.`program`
@@ -145,7 +149,7 @@ CREATE TABLE IF NOT EXISTS `advertising_agency`.`program`
             ON UPDATE RESTRICT
 );
 
-INSERT INTO `program` (`client_id`, `campaign_title`, `description`)
+/*INSERT INTO `program` (`client_id`, `campaign_title`, `description`)
 VALUES (1, 'Summer Campaign', 'Summer advertising campaign'),
        (2, 'Winter Campaign', 'Winter advertising campaign'),
        (3, 'Spring Campaign', 'Spring advertising campaign'),
@@ -157,7 +161,7 @@ VALUES (1, 'Summer Campaign', 'Summer advertising campaign'),
        (14, 'Black Friday Campaign', 'Black Friday advertising campaign'),
        (15, 'Cyber Monday Campaign', 'Cyber Monday advertising campaign'),
        (16, 'Back to School Campaign', 'Back to School advertising campaign'),
-       (23, 'Earth Day Campaign', 'Earth Day advertising campaign');
+       (23, 'Earth Day Campaign', 'Earth Day advertising campaign');*/
 
 -- -----------------------------------------------------
 -- Table `advertising_agency`.`program_has_advertising`
@@ -184,7 +188,7 @@ CREATE TABLE IF NOT EXISTS `advertising_agency`.`program_advertising`
             ON UPDATE RESTRICT
 );
 
-INSERT INTO `program_advertising` (`program_id`, `advertising_id`, `quantity`)
+/*INSERT INTO `program_advertising` (`program_id`, `advertising_id`, `quantity`)
 VALUES (1, 1, 3),
        (1, 3, 2),
        (2, 2, 1),
@@ -197,5 +201,5 @@ VALUES (1, 1, 3),
        (5, 10, 2),
        (6, 11, 1),
        (6, 12, 2),
-       (2, 16, 4);
+       (2, 16, 4);*/
 

@@ -9,11 +9,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Category {
 
-    private long id;
+    private String id;
 
     private String name;
 
-    public Category(long id) {
+    public Category(String id) {
         this.id = id;
     }
+
 }

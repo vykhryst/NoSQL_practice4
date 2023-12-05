@@ -1,0 +1,6 @@
+
+k
+java:S1192%"IDefine a constant instead of duplicating this literal "username" 3 times.(æºÞ•øÿÿÿÿ8‚®÷¹Ã1
+v	java:S120"ZRename this package name to match the regular expression '^[a-z_]+(\.[a-z_][a-z0-9_]*)*$'.(ê•×­8„®÷¹Ã1
+k
+java:S2095"IUse try-with-resources or close this "MongoClient" in a "finally" clause.(ªŒ°›ùÿÿÿÿ8¢®÷¹Ã1

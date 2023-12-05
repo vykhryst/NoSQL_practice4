@@ -5,10 +5,12 @@ import org.nosql.vykhryst.dao.entityDao.CategoryDAO;
 import org.nosql.vykhryst.dao.entityDao.ClientDAO;
 import org.nosql.vykhryst.dao.entityDao.ProgramDAO;
 
-public interface DAOFactory {
-    AdvertisingDAO getAdvertisingDAO();
-    ClientDAO getClientDAO();
-    ProgramDAO getProgramDAO();
+public interface AbstractDaoFactory {
+    AdvertisingDAO getAdvertisingDAO(TypeDAO type);
 
-    CategoryDAO getCategoryDAO();
+    ClientDAO getClientDAO(TypeDAO type);
+
+    ProgramDAO getProgramDAO(TypeDAO type);
+
+    CategoryDAO getCategoryDAO(TypeDAO type);
 }

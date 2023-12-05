@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="SqlDialectMappings">
-    <file url="file://$PROJECT_DIR$/src/main/java/org/nosql/vykhryst/dao/mysqlEntityDao/MySqlAdvertisingDAO.java" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/src/main/java/org/nosql/vykhryst/dao/mysql/mysqlEntityDao/MySqlAdvertisingDAO.java" dialect="GenericSQL" />
     <file url="file://$PROJECT_DIR$/src/main/resources/database/advertising_agency.sql" dialect="MySQL" />
     <file url="PROJECT" dialect="MySQL" />
   </component>

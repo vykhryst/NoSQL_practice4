@@ -48,5 +48,12 @@
       <artifactId>mysql-connector-j</artifactId>
       <version>8.2.0</version>
     </dependency>
+
+    <!-- https://mvnrepository.com/artifact/org.mongodb/mongodb-driver-sync -->
+    <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongodb-driver-sync</artifactId>
+      <version>4.11.1</version>
+    </dependency>
   </dependencies>
 </project>

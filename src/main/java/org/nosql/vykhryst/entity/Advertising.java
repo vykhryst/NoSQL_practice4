@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class Advertising {
 
-    private long id;
+    private String id;
     private Category category;
     private String name;
     private String measurement;
@@ -32,10 +32,9 @@ public class Advertising {
         this.updatedAt = advertisingBuilder.updatedAt;
     }
 
-    @AllArgsConstructor
-    @NoArgsConstructor
+
     public static class Builder {
-        private long id;
+        private String id;
         private Category category;
         private String name;
         private String measurement;
@@ -43,15 +42,8 @@ public class Advertising {
         private String description;
         private LocalDateTime updatedAt;
 
-        public Builder(Category category, String name, String measurement, BigDecimal unitPrice, String description) {
-            this.category = category;
-            this.name = name;
-            this.measurement = measurement;
-            this.unitPrice = unitPrice;
-            this.description = description;
-        }
 
-        public Builder id(long id) {
+        public Builder id(String id) {
             this.id = id;
             return this;
         }

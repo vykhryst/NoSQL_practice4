@@ -1,7 +1,8 @@
-package org.nosql.vykhryst.dao.mysqlEntityDao;
+package org.nosql.vykhryst.dao.mysql.mysqlEntityDao;
 
 
 import org.nosql.vykhryst.dao.entityDao.AdvertisingDAO;
+import org.nosql.vykhryst.dao.mysql.MySqlConnectionManager;
 import org.nosql.vykhryst.entity.Advertising;
 import org.nosql.vykhryst.entity.Category;
 import org.nosql.vykhryst.util.DBException;
@@ -18,16 +19,15 @@ public class MySqlAdvertisingDAO implements AdvertisingDAO {
     private static final String INSERT_AD = "INSERT INTO advertising (category_id, name, measurement, unit_price, description) VALUES (?, ?, ?, ?, ?)";
     private static final String UPDATE_AD = "UPDATE advertising SET category_id = ?, name = ?, measurement = ?, unit_price = ?, description = ? WHERE id = ?";
     private static final String DELETE_AD_BY_ID = "DELETE FROM advertising WHERE id = ?";
-    private final ConnectionManager connectionManager;
+    private final MySqlConnectionManager mySqlConnectionManager;
 
     public MySqlAdvertisingDAO() {
-        this.connectionManager = ConnectionManager.getInstance();
+        this.mySqlConnectionManager = MySqlConnectionManager.getInstance();
     }
 
-
     @Override
-    public List<Advertising> findAll() throws SQLException {
-        try (Connection conn = connectionManager.getConnection();
+    public List<Advertising> findAll() {
+        try (Connection conn = mySqlConnectionManager.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(SELECT_ALL_AD)) {
             List<Advertising> result = new ArrayList<>();
@@ -42,24 +42,11 @@ public class MySqlAdvertisingDAO implements AdvertisingDAO {
         }
     }
 
-    private static Advertising mapAdvertising(ResultSet rs) throws SQLException {
-        return new Advertising.Builder(
-                new Category(rs.getInt("c.id"), rs.getString("c.name")),
-                rs.getString("a.name"),
-                rs.getString("a.measurement"),
-                rs.getBigDecimal("a.unit_price"),
-                rs.getString("a.description"))
-                .id(rs.getInt("a.id"))
-                .updatedAt(rs.getTimestamp("a.updated_at").toLocalDateTime())
-                .build();
-    }
-
-
     @Override
-    public Optional<Advertising> findById(long id) throws SQLException {
-        try (Connection conn = connectionManager.getConnection();
+    public Optional<Advertising> findById(String id) {
+        try (Connection conn = mySqlConnectionManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(SELECT_AD_BY_ID)) {
-            stmt.setLong(1, id);
+            stmt.setLong(1, Long.parseLong(id));
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next() ? Optional.of(mapAdvertising(rs)) : Optional.empty();
             }
@@ -69,14 +56,14 @@ public class MySqlAdvertisingDAO implements AdvertisingDAO {
     }
 
     @Override
-    public long save(Advertising advertising) throws SQLException {
-        try (Connection conn = connectionManager.getConnection();
+    public String save(Advertising advertising) {
+        try (Connection conn = mySqlConnectionManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(INSERT_AD, Statement.RETURN_GENERATED_KEYS)) {
             setStatement(advertising, stmt);
             stmt.executeUpdate();
             ResultSet programKeys = stmt.getGeneratedKeys();
             if (programKeys.next()) {
-                advertising.setId(programKeys.getInt(1));
+                advertising.setId(String.valueOf(programKeys.getLong(1)));
             }
             return advertising.getId();
         } catch (SQLException e) {
@@ -84,20 +71,13 @@ public class MySqlAdvertisingDAO implements AdvertisingDAO {
         }
     }
 
-    private static void setStatement(Advertising advertising, PreparedStatement stmt) throws SQLException {
-        stmt.setLong(1, advertising.getCategory().getId());
-        stmt.setString(2, advertising.getName());
-        stmt.setString(3, advertising.getMeasurement());
-        stmt.setBigDecimal(4, advertising.getUnitPrice());
-        stmt.setString(5, advertising.getDescription());
-    }
 
     @Override
-    public boolean update(Advertising advertising) throws DBException {
-        try (Connection conn = connectionManager.getConnection();
+    public boolean update(Advertising advertising) {
+        try (Connection conn = mySqlConnectionManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(UPDATE_AD)) {
             setStatement(advertising, stmt);
-            stmt.setLong(6, advertising.getId());
+            stmt.setLong(6, Long.parseLong(advertising.getId()));
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             throw new DBException("Can't update advertising", e);
@@ -105,10 +85,10 @@ public class MySqlAdvertisingDAO implements AdvertisingDAO {
     }
 
     @Override
-    public boolean delete(long id) throws SQLException {
-        try (Connection conn = connectionManager.getConnection();
+    public boolean delete(String id) {
+        try (Connection conn = mySqlConnectionManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(DELETE_AD_BY_ID)) {
-            stmt.setLong(1, id);
+            stmt.setLong(1, Long.parseLong(id));
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -117,8 +97,8 @@ public class MySqlAdvertisingDAO implements AdvertisingDAO {
     }
 
     @Override
-    public Optional<Advertising> findByName(String name) throws SQLException {
-        try (Connection conn = connectionManager.getConnection();
+    public Optional<Advertising> findByName(String name) {
+        try (Connection conn = mySqlConnectionManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(SELECT_AD_BY_NAME)) {
             stmt.setString(1, name);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -127,6 +107,25 @@ public class MySqlAdvertisingDAO implements AdvertisingDAO {
         } catch (SQLException e) {
             throw new DBException("Can't get advertising by name", e);
         }
+    }
 
+    private static Advertising mapAdvertising(ResultSet rs) throws SQLException {
+        return new Advertising.Builder()
+                .id(Long.toString(rs.getInt("a.id")))
+                .name(rs.getString("a.name"))
+                .measurement(rs.getString("a.measurement"))
+                .unitPrice(rs.getBigDecimal("a.unit_price"))
+                .description(rs.getString("a.description"))
+                .category(new Category(Long.toString(rs.getInt("c.id")), rs.getString("c.name")))
+                .updatedAt(rs.getTimestamp("a.updated_at").toLocalDateTime())
+                .build();
+    }
+
+    private static void setStatement(Advertising advertising, PreparedStatement stmt) throws SQLException {
+        stmt.setLong(1, Long.parseLong(advertising.getCategory().getId()));
+        stmt.setString(2, advertising.getName());
+        stmt.setString(3, advertising.getMeasurement());
+        stmt.setBigDecimal(4, advertising.getUnitPrice());
+        stmt.setString(5, advertising.getDescription());
     }
 }

@@ -1,18 +1,17 @@
 package org.nosql.vykhryst.dao;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
 public interface DAO<T> {
 
-    Optional<T> findById(long id) throws SQLException;
+    Optional<T> findById(String id);
 
-    List<T> findAll() throws SQLException;
+    List<T> findAll();
 
-    long save(T entity) throws SQLException;
+    String save(T entity);
 
-    boolean update(T entity) throws SQLException;
+    boolean update(T entity);
 
-    boolean delete(long id) throws SQLException;
+    boolean delete(String id);
 }

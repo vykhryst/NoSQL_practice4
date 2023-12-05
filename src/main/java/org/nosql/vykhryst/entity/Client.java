@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Client {
-    private long id;
+    private String id;
     private String username;
     private String firstname;
     private String lastname;
@@ -26,8 +26,9 @@ public class Client {
         this.password = builder.password;
     }
 
+
     public static class Builder{
-        private long id;
+        private String id;
         private String username;
         private String firstname;
         private String lastname;
@@ -36,7 +37,7 @@ public class Client {
         private String password;
 
 
-        public Builder id(long id){
+        public Builder id(String id){
             this.id = id;
             return this;
         }

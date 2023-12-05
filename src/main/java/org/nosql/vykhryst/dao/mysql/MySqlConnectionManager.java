@@ -1,50 +1,33 @@
-package org.nosql.vykhryst.dao.mysqlEntityDao;
+package org.nosql.vykhryst.dao.mysql;
 
 
+import org.nosql.vykhryst.util.PropertiesManager;
 import org.nosql.vykhryst.util.DBException;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Properties;
 
-public class ConnectionManager {
+public class MySqlConnectionManager {
 
-    private static ConnectionManager instance;
+    private static MySqlConnectionManager instance;
     private static final String URL;
     private static final String USERNAME;
     private static final String PASSWORD;
-    private static final String DATABASE_PROPERTIES = "database/database.properties";
 
     static {
-        Properties properties = loadProperties();
-        URL = properties.getProperty("mysql.database.url");
-        USERNAME = properties.getProperty("mysql.database.username");
-        PASSWORD = properties.getProperty("mysql.database.password");
+        URL = PropertiesManager.getProperty("mysql.database.url");
+        USERNAME = PropertiesManager.getProperty("mysql.database.username");
+        PASSWORD = PropertiesManager.getProperty("mysql.database.password");
     }
 
-    private static Properties loadProperties() {
-        Properties properties = new Properties();
-        try (InputStream input = ConnectionManager.class.getClassLoader().getResourceAsStream(DATABASE_PROPERTIES)) {
-            if (input == null) {
-                throw new RuntimeException("Sorry, unable to find " + DATABASE_PROPERTIES);
-            }
-            properties.load(input);
-        } catch (IOException e) {
-            throw new RuntimeException("Error loading properties file", e);
-        }
-        return properties;
-    }
-
-    private ConnectionManager() {
+    private MySqlConnectionManager() {
         // Private constructor to prevent instantiation
     }
 
-    public static ConnectionManager getInstance() {
+    public static MySqlConnectionManager getInstance() {
         if (instance == null) {
-            instance = new ConnectionManager();
+            instance = new MySqlConnectionManager();
         }
         return instance;
     }

@@ -35,3 +35,17 @@ h
 8src/main/java/org/nosql/vykhryst/entity/Advertising.java,5\e\5ef0f09a02e37e418a2a1aeb933e1dfa0b2042dd
 d
 4src/main/java/org/nosql/vykhryst/entity/Program.java,f\8\f81b9f83dc9215f1e3cae1f1821cc86e44ed6955
+a
+1src/main/java/org/nosql/vykhryst/dao/TypeDAO.java,8\4\84ccfca78f26471b4755a88e4b480cdcd1607014
+
+Osrc/main/java/org/nosql/vykhryst/dao/mysqlEntityDao/MongoConnectionManager.java,4\7\47273f23a9d832b8ea119c403cb4432deb061808
+y
+Isrc/main/java/org/nosql/vykhryst/dao/mongoEntityDao/MongoCategoryDAO.java,a\d\ad037e7e0c70fdcf4be5284b8f6fa0ef3bf247b0
+w
+Gsrc/main/java/org/nosql/vykhryst/dao/mongoEntityDao/MongoClientDAO.java,9\c\9cb91672413bc2a15391ab1ecb1c9a1043b99290
+i
+9src/main/java/org/nosql/vykhryst/dao/MongoDaoFactory.java,4\b\4bcc6112e65b7d4a7aac714e3739cd3c3b86dcb5
+|
+Lsrc/main/java/org/nosql/vykhryst/dao/mongoEntityDao/MongoAdvertisingDAO.java,0\8\0850e090b5c5bfd103d6c0a6582221fac9eabcec
+x
+Hsrc/main/java/org/nosql/vykhryst/dao/mongoEntityDao/MongoProgramDAO.java,6\c\6c807ac186c1782d402cae32c011f7a2dca02074

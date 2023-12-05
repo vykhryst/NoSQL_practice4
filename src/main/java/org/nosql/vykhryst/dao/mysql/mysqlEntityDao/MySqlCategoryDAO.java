@@ -1,6 +1,7 @@
-package org.nosql.vykhryst.dao.mysqlEntityDao;
+package org.nosql.vykhryst.dao.mysql.mysqlEntityDao;
 
 import org.nosql.vykhryst.dao.entityDao.CategoryDAO;
+import org.nosql.vykhryst.dao.mysql.MySqlConnectionManager;
 import org.nosql.vykhryst.entity.Category;
 import org.nosql.vykhryst.util.DBException;
 
@@ -16,17 +17,17 @@ public class MySqlCategoryDAO implements CategoryDAO {
     public static final String SELECT_BY_ID = "SELECT id, name FROM category WHERE id = ?";
     public static final String UPDATE_CATEGORY = "UPDATE category SET name = ? WHERE id = ?";
 
-    private final ConnectionManager connectionManager;
+    private final MySqlConnectionManager mySqlConnectionManager;
 
     public MySqlCategoryDAO() {
-        this.connectionManager = ConnectionManager.getInstance();
+        this.mySqlConnectionManager = MySqlConnectionManager.getInstance();
     }
 
     @Override
-    public Optional<Category> findById(long id) throws SQLException {
-        try (Connection conn = connectionManager.getConnection();
+    public Optional<Category> findById(String id) {
+        try (Connection conn = mySqlConnectionManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(SELECT_BY_ID)) {
-            stmt.setLong(1, id);
+            stmt.setLong(1, Long.parseLong(id));
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next() ? Optional.of(mapCategory(rs)) : Optional.empty();
             }
@@ -36,8 +37,8 @@ public class MySqlCategoryDAO implements CategoryDAO {
     }
 
     @Override
-    public List<Category> findAll() throws SQLException {
-        try (Connection conn = connectionManager.getConnection();
+    public List<Category> findAll() {
+        try (Connection conn = mySqlConnectionManager.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(SELECT_ALL)) {
             List<Category> result = new ArrayList<>();
@@ -51,22 +52,15 @@ public class MySqlCategoryDAO implements CategoryDAO {
         }
     }
 
-    private static Category mapCategory(ResultSet rs) throws SQLException {
-        Category category = new Category();
-        category.setId(rs.getInt(1));
-        category.setName(rs.getString(2));
-        return category;
-    }
-
     @Override
-    public long save(Category category) throws SQLException {
-        try (Connection conn = connectionManager.getConnection();
+    public String save(Category category) {
+        try (Connection conn = mySqlConnectionManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(INSERT_CATEGORY, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, category.getName());
             stmt.executeUpdate();
             ResultSet programKeys = stmt.getGeneratedKeys();
             if (programKeys.next()) {
-                category.setId(programKeys.getInt(1));
+                category.setId(String.valueOf(programKeys.getInt(1)));
             }
             return category.getId();
         } catch (SQLException e) {
@@ -75,11 +69,11 @@ public class MySqlCategoryDAO implements CategoryDAO {
     }
 
     @Override
-    public boolean update(Category entity) throws SQLException {
-        try(Connection conn = connectionManager.getConnection();
+    public boolean update(Category entity) {
+        try(Connection conn = mySqlConnectionManager.getConnection();
             PreparedStatement stmt = conn.prepareStatement(UPDATE_CATEGORY)) {
             stmt.setString(1, entity.getName());
-            stmt.setLong(2, entity.getId());
+            stmt.setLong(2, Long.parseLong(entity.getId()));
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             throw new DBException("Can't update category", e);
@@ -87,13 +81,20 @@ public class MySqlCategoryDAO implements CategoryDAO {
     }
 
     @Override
-    public boolean delete(long id) throws SQLException {
-        try (Connection conn = connectionManager.getConnection();
+    public boolean delete(String id) {
+        try (Connection conn = mySqlConnectionManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(DELETE_BY_ID)) {
-            stmt.setLong(1, id);
+            stmt.setLong(1, Long.parseLong(id));
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             throw new DBException("Can't delete category", e);
         }
+    }
+
+    private static Category mapCategory(ResultSet rs) throws SQLException {
+        Category category = new Category();
+        category.setId(String.valueOf(rs.getInt(1)));
+        category.setName(rs.getString(2));
+        return category;
     }
 }
