@@ -1,9 +1,6 @@
 package org.nosql.vykhryst.dao.mongodb.mongoEntityDao;
 
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import org.bson.types.Decimal128;
 import org.bson.types.ObjectId;
@@ -14,11 +11,26 @@ import org.nosql.vykhryst.entity.Category;
 import org.nosql.vykhryst.entity.Client;
 import org.nosql.vykhryst.entity.Program;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 import static java.time.ZoneOffset.UTC;
 
 public class MongoProgramDAO implements ProgramDAO {
+    public static final String CAMPAIGN_TITLE = "campaignTitle";
+    public static final String DESCRIPTION = "description";
+    public static final String CREATED_AT = "createdAt";
+    public static final String CLIENT = "client";
+    public static final String QUANTITY = "quantity";
+    public static final String ADVERTISING = "advertising";
+    public static final String ADVERTISING_LIST = "advertisingList";
+    public static final String CATEGORY = "category";
+    public static final String MEASUREMENT = "measurement";
+    public static final String UNIT_PRICE = "unitPrice";
+    public static final String NAME = "name";
+    public static final String EMAIL = "email";
+    public static final String PASSWORD = "password";
+    public static final String UPDATED_AT = "updatedAt";
     private final MongoCollection<Document> programCollection;
 
     public MongoProgramDAO() {
@@ -42,11 +54,19 @@ public class MongoProgramDAO implements ProgramDAO {
     }
 
     @Override
-    public String save(Program entity) {
-        Document doc = mapProgramToDocument(entity);
+    public String save(Program program) {
+        Document doc = mapProgramToDocument(program);
         programCollection.insertOne(doc);
-        entity.setId(doc.getObjectId("_id").toString());
-        return entity.getId();
+        program.setId(doc.getObjectId("_id").toString());
+        return program.getId();
+    }
+
+    @Override
+    public String migrate(Program program) {
+        Document programDoc = mapProgramToDocumentMigration(program);
+        programCollection.insertOne(programDoc);
+        program.setId(programDoc.getObjectId("_id").toString());
+        return program.getId();
     }
 
 
@@ -68,12 +88,12 @@ public class MongoProgramDAO implements ProgramDAO {
     private Program mapDocumentToProgram(Document programDoc) {
         Program.Builder programBuilder = new Program.Builder()
                 .id(programDoc.getObjectId("_id").toString())
-                .campaignTitle(programDoc.getString("campaignTitle"))
-                .description(programDoc.getString("description"))
-                .createdAt(programDoc.getDate("createdAt").toInstant().atZone(UTC).toLocalDateTime())
-                .client(mapDocumentToClient(programDoc.get("client", Document.class)));
+                .campaignTitle(programDoc.getString(CAMPAIGN_TITLE))
+                .description(programDoc.getString(DESCRIPTION))
+                .createdAt(programDoc.getDate(CREATED_AT).toInstant().atZone(UTC).toLocalDateTime())
+                .client(mapDocumentToClient(programDoc.get(CLIENT, Document.class)));
 
-        List<Document> advertisingList = programDoc.getList("advertisingList", Document.class);
+        List<Document> advertisingList = programDoc.getList(ADVERTISING_LIST, Document.class);
         for (Document advertisingListItem : advertisingList) {
             AbstractMap.SimpleEntry<Advertising, Integer> entry = mapAdvertisingListItem(advertisingListItem);
             programBuilder.addAdvertising(entry.getKey(), entry.getValue());
@@ -83,24 +103,24 @@ public class MongoProgramDAO implements ProgramDAO {
 
 
     private static AbstractMap.SimpleEntry<Advertising, Integer> mapAdvertisingListItem(Document advertisingDoc) {
-        Document adDoc = advertisingDoc.get("advertising", Document.class);
+        Document adDoc = advertisingDoc.get(ADVERTISING, Document.class);
         Advertising advertising = mapDocumentToAdvertising(adDoc);
-        return new AbstractMap.SimpleEntry<>(advertising, advertisingDoc.getInteger("quantity"));
+        return new AbstractMap.SimpleEntry<>(advertising, advertisingDoc.getInteger(QUANTITY));
     }
 
     private static Category mapDocumentToCategory(Document categoryDoc) {
-        return new Category(categoryDoc.getObjectId("_id").toString(), categoryDoc.getString("name"));
+        return new Category(categoryDoc.getObjectId("_id").toString(), categoryDoc.getString(NAME));
     }
 
     private static Advertising mapDocumentToAdvertising(Document result) {
         return new Advertising.Builder()
                 .id(result.getObjectId("_id").toString())
-                .name(result.getString("name"))
-                .description(result.getString("description"))
-                .measurement(result.getString("measurement"))
-                .unitPrice(result.get("unitPrice", Decimal128.class).bigDecimalValue())
-                .updatedAt(result.getDate("updatedAt").toInstant().atZone(UTC).toLocalDateTime())
-                .category(mapDocumentToCategory(result.get("category", Document.class)))
+                .name(result.getString(NAME))
+                .description(result.getString(DESCRIPTION))
+                .measurement(result.getString(MEASUREMENT))
+                .unitPrice(result.get(UNIT_PRICE, Decimal128.class).bigDecimalValue())
+                .updatedAt(result.getDate(UPDATED_AT).toInstant().atZone(UTC).toLocalDateTime())
+                .category(mapDocumentToCategory(result.get(CATEGORY, Document.class)))
                 .build();
     }
 
@@ -108,8 +128,8 @@ public class MongoProgramDAO implements ProgramDAO {
         return new Client.Builder()
                 .id(clientDoc.getObjectId("_id").toString())
                 .username(clientDoc.getString("username"))
-                .password(clientDoc.getString("password"))
-                .email(clientDoc.getString("email"))
+                .password(clientDoc.getString(PASSWORD))
+                .email(clientDoc.getString(EMAIL))
                 .firstname(clientDoc.getString("firstname"))
                 .lastname(clientDoc.getString("lastname"))
                 .phoneNumber(clientDoc.getString("phoneNumber"))
@@ -117,30 +137,30 @@ public class MongoProgramDAO implements ProgramDAO {
     }
 
     private Document mapProgramToDocument(Program program) {
-        Document programDoc = new Document("campaignTitle", program.getCampaignTitle())
-                .append("description", program.getDescription())
-                .append("createdAt", Date.from(program.getCreatedAt().toInstant(UTC)))
-                .append("client", mapClientToDocument(program.getClient()));
+        Document programDoc = new Document(CAMPAIGN_TITLE, program.getCampaignTitle())
+                .append(DESCRIPTION, program.getDescription())
+                .append(CREATED_AT, Date.from(program.getCreatedAt().toInstant(UTC)))
+                .append(CLIENT, mapClientToDocument(program.getClient()));
 
         List<Document> advertisingListDocs = new ArrayList<>();
         for (Map.Entry<Advertising, Integer> entry : program.getAdvertisings().entrySet()) {
-            Document advertisingListItem = new Document("advertising", mapAdvertisingToDocument(entry.getKey()))
-                    .append("quantity", entry.getValue());
+            Document advertisingListItem = new Document(ADVERTISING, mapAdvertisingToDocument(entry.getKey()))
+                    .append(QUANTITY, entry.getValue());
             advertisingListDocs.add(advertisingListItem);
         }
-        programDoc.append("advertisingList", advertisingListDocs);
+        programDoc.append(ADVERTISING_LIST, advertisingListDocs);
         return programDoc;
     }
 
     private static Document mapAdvertisingToDocument(Advertising advertising) {
         return new Document("_id", new ObjectId(advertising.getId()))
-                .append("name", advertising.getName())
-                .append("description", advertising.getDescription())
-                .append("measurement", advertising.getMeasurement())
-                .append("unitPrice", new Decimal128(advertising.getUnitPrice()))
-                .append("updatedAt", advertising.getUpdatedAt())
-                .append("category", new Document("_id", new ObjectId(advertising.getCategory().getId()))
-                        .append("name", advertising.getCategory().getName()));
+                .append(NAME, advertising.getName())
+                .append(DESCRIPTION, advertising.getDescription())
+                .append(MEASUREMENT, advertising.getMeasurement())
+                .append(UNIT_PRICE, new Decimal128(advertising.getUnitPrice()))
+                .append(UPDATED_AT, advertising.getUpdatedAt())
+                .append(CATEGORY, new Document("_id", new ObjectId(advertising.getCategory().getId()))
+                        .append(NAME, advertising.getCategory().getName()));
     }
 
     private static Document mapClientToDocument(Client client) {
@@ -149,8 +169,50 @@ public class MongoProgramDAO implements ProgramDAO {
                 .append("firstname", client.getFirstname())
                 .append("lastname", client.getLastname())
                 .append("phoneNumber", client.getPhoneNumber())
-                .append("email", client.getEmail())
-                .append("password", client.getPassword());
+                .append(EMAIL, client.getEmail())
+                .append(PASSWORD, client.getPassword());
+    }
+
+    private Document mapProgramToDocumentMigration(Program program) {
+        Document programDoc = new Document(CAMPAIGN_TITLE, program.getCampaignTitle())
+                .append(DESCRIPTION, program.getDescription())
+                .append(CREATED_AT, Date.from(program.getCreatedAt().toInstant(UTC)))
+                .append(CLIENT, mapClientToDocument(Objects.requireNonNull(findClientByEmailAndPassword(
+                        program.getClient().getEmail(), program.getClient().getPassword()))));
+
+        List<Document> advertisingListDocs = new ArrayList<>();
+        for (Map.Entry<Advertising, Integer> entry : program.getAdvertisings().entrySet()) {
+            Document advertisingListItem = new Document(ADVERTISING, mapAdvertisingToDocumentMigration(
+                    Objects.requireNonNull(findAdvertisingByMultipleKeys(entry.getKey().getName(), entry.getKey().getMeasurement(), entry.getKey().getUnitPrice()))))
+                    .append(QUANTITY, entry.getValue());
+            advertisingListDocs.add(advertisingListItem);
+        }
+        programDoc.append(ADVERTISING_LIST, advertisingListDocs);
+        return programDoc;
+    }
+
+    private Document mapAdvertisingToDocumentMigration(Advertising advertising) {
+        Category category = findCategoryByName(advertising.getCategory().getName());
+        advertising.setCategory(category);
+        return mapAdvertisingToDocument(advertising);
+    }
+
+    private Category findCategoryByName(String name) {
+        Document query = new Document(NAME, name);
+        Document categoryDoc = MongoConnectionManager.getCollection(CATEGORY).find(query).first();
+        return categoryDoc != null ? mapDocumentToCategory(categoryDoc) : null;
+    }
+
+    private Advertising findAdvertisingByMultipleKeys(String name, String measurement, BigDecimal unitPrice) {
+        Document query = new Document(NAME, name).append(MEASUREMENT, measurement).append(UNIT_PRICE, new Decimal128(unitPrice));
+        Document adDoc = MongoConnectionManager.getCollection(ADVERTISING).find(query).first();
+        return adDoc != null ? mapDocumentToAdvertising(adDoc) : null;
+    }
+
+    private Client findClientByEmailAndPassword(String email, String password) {
+        Document query = new Document(EMAIL, email).append(PASSWORD, password);
+        Document clientDoc = MongoConnectionManager.getCollection(CLIENT).find(query).first();
+        return clientDoc != null ? mapDocumentToClient(clientDoc) : null;
     }
 
     private Document createIdQuery(String id) {

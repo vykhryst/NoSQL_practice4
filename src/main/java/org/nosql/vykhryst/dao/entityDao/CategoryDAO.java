@@ -4,5 +4,5 @@ import org.nosql.vykhryst.dao.DAO;
 import org.nosql.vykhryst.entity.Category;
 
 public interface CategoryDAO extends DAO<Category> {
-
+    Category findByName(String name);
 }

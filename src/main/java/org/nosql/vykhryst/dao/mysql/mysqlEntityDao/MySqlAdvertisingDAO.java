@@ -109,6 +109,41 @@ public class MySqlAdvertisingDAO implements AdvertisingDAO {
         }
     }
 
+    public String migrate(Advertising advertising) {
+        try (Connection conn = mySqlConnectionManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(INSERT_AD, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setLong(1, Long.parseLong(findCategoryByName(advertising.getCategory().getName()).getId()));
+            stmt.setString(2, advertising.getName());
+            stmt.setString(3, advertising.getMeasurement());
+            stmt.setBigDecimal(4, advertising.getUnitPrice());
+            stmt.setString(5, advertising.getDescription());
+            stmt.executeUpdate();
+            ResultSet generatedKeys = stmt.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                advertising.setId(String.valueOf(generatedKeys.getLong(1)));
+            }
+            return advertising.getId();
+        } catch (SQLException e) {
+            throw new DBException("Can't insert advertising", e);
+        }
+    }
+
+    private Category findCategoryByName(String name) {
+        Category category = null;
+        try (Connection conn = mySqlConnectionManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM category WHERE name = ?")) {
+            stmt.setString(1, name);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if(rs.next()) {
+                    category = new Category(Long.toString(rs.getInt("id")), rs.getString("name"));
+                }
+            }
+            return category;
+        } catch (SQLException e) {
+            throw new DBException("Can't get category by name", e);
+        }
+    }
+
     private static Advertising mapAdvertising(ResultSet rs) throws SQLException {
         return new Advertising.Builder()
                 .id(Long.toString(rs.getInt("a.id")))

@@ -1,16 +1,13 @@
 package org.nosql.vykhryst.dao.mongodb.mongoEntityDao;
 
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import org.bson.types.Decimal128;
 import org.bson.types.ObjectId;
 import org.nosql.vykhryst.dao.entityDao.AdvertisingDAO;
+import org.nosql.vykhryst.dao.mongodb.MongoConnectionManager;
 import org.nosql.vykhryst.entity.Advertising;
 import org.nosql.vykhryst.entity.Category;
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -24,9 +21,7 @@ public class MongoAdvertisingDAO implements AdvertisingDAO {
     private final MongoCollection<Document> advertisingCollection;
 
     public MongoAdvertisingDAO() {
-        MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
-        MongoDatabase database = mongoClient.getDatabase("advertising_agency");
-        this.advertisingCollection = database.getCollection("advertising");
+        this.advertisingCollection = MongoConnectionManager.getCollection("advertising");
     }
 
     @Override
@@ -75,6 +70,27 @@ public class MongoAdvertisingDAO implements AdvertisingDAO {
         return result != null ? Optional.of(mapDocumentToAdvertising(result)) : Optional.empty();
     }
 
+    @Override
+    public String migrate(Advertising advertising) {
+        Document doc = new Document("name", advertising.getName())
+                .append("description", advertising.getDescription())
+                .append("measurement", advertising.getMeasurement())
+                .append("unitPrice", new Decimal128(advertising.getUnitPrice()))
+                .append("updatedAt", advertising.getUpdatedAt());
+        Category category = findCategoryByName(advertising.getCategory().getName());
+        doc.append("category", new Document("_id", new ObjectId(category.getId()))
+                .append("name", category.getName()));
+        advertisingCollection.insertOne(doc);
+        advertising.setId(doc.getObjectId("_id").toString());
+        return advertising.getId();
+    }
+
+    private Category findCategoryByName(String name) {
+        Document query = new Document("name", name);
+        Document categoryDoc = MongoConnectionManager.getCollection("category").find(query).first();
+        return categoryDoc != null ? mapDocumentToCategory(categoryDoc) : null;
+    }
+
     public List<Advertising> findByNameAndUnitPrice(String name, BigDecimal unitPrice) {
         Document query = new Document();
         if (name != null) {
@@ -91,7 +107,7 @@ public class MongoAdvertisingDAO implements AdvertisingDAO {
     }
 
 
-        // Utility methods
+    // Utility methods
     private Advertising mapDocumentToAdvertising(Document result) {
         return new Advertising.Builder()
                 .id(result.getObjectId("_id").toString())
@@ -102,16 +118,6 @@ public class MongoAdvertisingDAO implements AdvertisingDAO {
                 .updatedAt(result.getDate("updatedAt").toInstant().atZone(UTC).toLocalDateTime())
                 .category(mapDocumentToCategory(result.get("category", Document.class)))
                 .build();
-
-        /*String id = result.getObjectId("_id").toString();
-        String name = result.getString("name");
-        String description = result.getString("description");
-        String measurement = result.getString("measurement");
-        BigDecimal unitPrice = result.get("unitPrice", Decimal128.class).bigDecimalValue();
-        LocalDateTime updatedAt = result.getDate("updatedAt").toInstant().atZone(UTC).toLocalDateTime();
-        Document categoryDoc = result.get("category", Document.class);
-        Category category = new Category(categoryDoc.getObjectId("_id").toString(), categoryDoc.getString("name"));
-        return new Advertising(id, category, name, measurement, unitPrice, description, updatedAt);*/
     }
 
     private static Category mapDocumentToCategory(Document categoryDoc) {

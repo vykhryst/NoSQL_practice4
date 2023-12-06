@@ -20,14 +20,14 @@ public class TestDaoApp {
         // Initialize DAO Factory
         AbstractDaoFactory daoFactory = DaoFactory.getInstance();
 
-        // Test Category
-        testCategory(daoFactory.getCategoryDAO(TypeDAO.MONGODB));
-
-        // Test Advertising
-        testAdvertising(daoFactory.getAdvertisingDAO(TypeDAO.MONGODB), daoFactory.getCategoryDAO(TypeDAO.MONGODB));
-
-        // Test Client
-        testClient(daoFactory.getClientDAO(TypeDAO.MONGODB));
+//        // Test Category
+//        testCategory(daoFactory.getCategoryDAO(TypeDAO.MONGODB));
+//
+//        // Test Advertising
+//        testAdvertising(daoFactory.getAdvertisingDAO(TypeDAO.MONGODB), daoFactory.getCategoryDAO(TypeDAO.MONGODB));
+//
+//        // Test Client
+//        testClient(daoFactory.getClientDAO(TypeDAO.MONGODB));
 
         // Test Program
         testProgram(daoFactory.getProgramDAO(TypeDAO.MONGODB), daoFactory.getAdvertisingDAO(TypeDAO.MONGODB));
@@ -137,11 +137,15 @@ public class TestDaoApp {
     private static void testProgram(ProgramDAO programDAO, AdvertisingDAO advertisingDAO) {
         System.out.println("\n----- Testing Program -----");
 
+        // Find All Programs
+//        System.out.println("All Programs:");
+//        programDAO.findAll().forEach(System.out::println);
+
         // Find Advertising by ID
-        Advertising advertising1 = advertisingDAO.findById("656e1f95729b5ddf823941da").orElse(null);
+        Advertising advertising1 = advertisingDAO.findById("6570929988098f00a0a4d8dd").orElse(null);
         System.out.println("Found Advertising 1 by ID: " + advertising1);
 
-        Advertising advertising2 = advertisingDAO.findById("676e1f75829b5ddf823941da").orElse(null);
+        Advertising advertising2 = advertisingDAO.findById("6570929988098f00a0a4d8dc").orElse(null);
         System.out.println("Found Advertising 2 by ID: " + advertising2);
 
         // Add Program
@@ -172,7 +176,7 @@ public class TestDaoApp {
 
 
         // Update Program Advertising
-        Advertising advertising3 = advertisingDAO.findById("657e1f85729b5ddf824541da").orElse(null);
+        Advertising advertising3 = advertisingDAO.findById("6570929988098f00a0a4d8e1").orElse(null);
         program.addAdvertising(advertising3, 30);
         System.out.println("\nUpdating Program Advertising: " + programDAO.update(program));
         System.out.println("Result: " + programDAO.findById(program.getId()).orElse(null));

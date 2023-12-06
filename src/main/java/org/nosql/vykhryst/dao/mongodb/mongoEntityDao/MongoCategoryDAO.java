@@ -1,12 +1,10 @@
 package org.nosql.vykhryst.dao.mongodb.mongoEntityDao;
 
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.nosql.vykhryst.dao.entityDao.CategoryDAO;
+import org.nosql.vykhryst.dao.mongodb.MongoConnectionManager;
 import org.nosql.vykhryst.entity.Category;
 
 import java.util.ArrayList;
@@ -18,9 +16,7 @@ public class MongoCategoryDAO implements CategoryDAO {
     private final MongoCollection<Document> categoryCollection;
 
     public MongoCategoryDAO() {
-        MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
-        MongoDatabase database = mongoClient.getDatabase("advertising_agency");
-        this.categoryCollection = database.getCollection("category");
+        this.categoryCollection = MongoConnectionManager.getCollection("category");
     }
 
     @Override
@@ -63,7 +59,15 @@ public class MongoCategoryDAO implements CategoryDAO {
     private static Category mapDocumentToCategory(Document doc) {
         return new Category(doc.getObjectId("_id").toString(), doc.getString("name"));
     }
+
     private static Document createIdQuery(String id) {
         return new Document("_id", new ObjectId(id));
+    }
+
+    @Override
+    public Category findByName(String name) {
+        Document query = new Document("name", name);
+        Document result = categoryCollection.find(query).first();
+        return result != null ? mapDocumentToCategory(result) : null;
     }
 }

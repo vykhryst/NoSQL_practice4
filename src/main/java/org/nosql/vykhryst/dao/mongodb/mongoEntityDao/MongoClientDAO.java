@@ -1,12 +1,10 @@
 package org.nosql.vykhryst.dao.mongodb.mongoEntityDao;
 
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.nosql.vykhryst.dao.entityDao.ClientDAO;
+import org.nosql.vykhryst.dao.mongodb.MongoConnectionManager;
 import org.nosql.vykhryst.entity.Client;
 
 import java.util.ArrayList;
@@ -17,9 +15,7 @@ public class MongoClientDAO implements ClientDAO {
     private final MongoCollection<Document> clientCollection;
 
     public MongoClientDAO() {
-        MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
-        MongoDatabase database = mongoClient.getDatabase("advertising_agency");
-        this.clientCollection = database.getCollection("client");
+        this.clientCollection = MongoConnectionManager.getCollection("client");
     }
 
     @Override

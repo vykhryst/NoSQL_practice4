@@ -70,8 +70,8 @@ public class MySqlCategoryDAO implements CategoryDAO {
 
     @Override
     public boolean update(Category entity) {
-        try(Connection conn = mySqlConnectionManager.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(UPDATE_CATEGORY)) {
+        try (Connection conn = mySqlConnectionManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(UPDATE_CATEGORY)) {
             stmt.setString(1, entity.getName());
             stmt.setLong(2, Long.parseLong(entity.getId()));
             return stmt.executeUpdate() > 0;
@@ -88,6 +88,19 @@ public class MySqlCategoryDAO implements CategoryDAO {
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             throw new DBException("Can't delete category", e);
+        }
+    }
+
+    @Override
+    public Category findByName(String name) {
+        try (Connection conn = mySqlConnectionManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(SELECT_ALL + " WHERE name = ?")) {
+            stmt.setString(1, name);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? mapCategory(rs) : null;
+            }
+        } catch (SQLException e) {
+            throw new DBException("Can't get category by name", e);
         }
     }
 

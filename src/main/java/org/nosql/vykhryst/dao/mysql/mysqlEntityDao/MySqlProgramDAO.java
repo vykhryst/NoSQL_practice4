@@ -9,6 +9,7 @@ import org.nosql.vykhryst.entity.Client;
 import org.nosql.vykhryst.entity.Program;
 import org.nosql.vykhryst.util.DBException;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,21 +23,21 @@ public class MySqlProgramDAO implements ProgramDAO {
     private static final String INSERT_PROGRAM_ADVERTISING = "INSERT INTO program_advertising (program_id, advertising_id, quantity) VALUES (?, ?, ?)";
     private static final String UPDATE_PROGRAM_QUANTITY = "UPDATE program_advertising SET quantity = ? WHERE program_id = ? AND advertising_id = ?";
     private static final String DELETE_PROGRAM_ADVERTISING = "DELETE FROM program_advertising WHERE program_id = ? AND advertising_id = ?";
-    public static final String SELECT_ALL_PROGRAMS = "SELECT p.id, c.id,c.username,c.firstname, c.lastname, c.phone_number, c.email, c.password, p.campaign_title,p.description, p.created_at\n" +
+    public static final String SELECT_ALL_PROGRAMS = "SELECT p.id, c.id, c.username,c.firstname, c.lastname, c.phone_number, c.email, c.password, p.campaign_title,p.description, p.created_at\n" +
             "FROM program p  INNER JOIN client c ON p.client_id = c.id;";
     public static final String SELECT_PROGRAM_ADVERTISING = "SELECT a.id, c.id, c.name, a.name, a.measurement, a.unit_price, a.description, a.updated_at, pa.quantity\n" +
             "FROM program p INNER JOIN program_advertising pa ON p.id = pa.program_id INNER JOIN advertising a ON pa.advertising_id = a.id   INNER JOIN category c on a.category_id = c.id WHERE p.id = ?;";
     public static final String SELECT_PROGRAM_BY_ID = "SELECT p.id,c.id,c.username,c.firstname,c.lastname,c.phone_number,c.email,c.password,p.campaign_title,p.description,p.created_at\n" +
             "FROM program p INNER JOIN client c ON p.client_id = c.id WHERE p.id = ?";
-    private final MySqlConnectionManager mySqlConnectionManager;
+    private final MySqlConnectionManager connectionManager;
 
     public MySqlProgramDAO() {
-        this.mySqlConnectionManager = MySqlConnectionManager.getInstance();
+        this.connectionManager = MySqlConnectionManager.getInstance();
     }
 
     @Override
     public List<Program> findAll() {
-        try (Connection conn = mySqlConnectionManager.getConnection();
+        try (Connection conn = connectionManager.getConnection();
              Statement st = conn.createStatement()) {
             ResultSet rs = st.executeQuery(SELECT_ALL_PROGRAMS);
             List<Program> programs = new ArrayList<>();
@@ -53,7 +54,7 @@ public class MySqlProgramDAO implements ProgramDAO {
 
     @Override
     public Optional<Program> findById(String id) {
-        try (Connection conn = mySqlConnectionManager.getConnection();
+        try (Connection conn = connectionManager.getConnection();
              PreparedStatement st = conn.prepareStatement(SELECT_PROGRAM_BY_ID)) {
             st.setLong(1, Long.parseLong(id));
             try (ResultSet rs = st.executeQuery()) {
@@ -74,7 +75,7 @@ public class MySqlProgramDAO implements ProgramDAO {
         Connection conn = null;
         PreparedStatement st = null;
         try {
-            conn = mySqlConnectionManager.getConnection(false); // false - no auto commit
+            conn = connectionManager.getConnection(false); // false - no auto commit
             // insert program
             st = conn.prepareStatement(INSERT_PROGRAM, Statement.RETURN_GENERATED_KEYS);
             st.setLong(1, Long.parseLong(program.getClient().getId()));
@@ -95,13 +96,13 @@ public class MySqlProgramDAO implements ProgramDAO {
                 }
                 st.executeBatch();
             }
-            mySqlConnectionManager.commit(conn); // commit transaction
+            connectionManager.commit(conn); // commit transaction
             return program.getId();
         } catch (SQLException e) {
-            mySqlConnectionManager.rollback(conn); // rollback transaction
+            connectionManager.rollback(conn); // rollback transaction
             throw new DBException(e.getMessage(), e);
         } finally {
-            mySqlConnectionManager.close(conn, st); // close connection and statement
+            connectionManager.close(conn, st); // close connection and statement
         }
     }
 
@@ -109,7 +110,7 @@ public class MySqlProgramDAO implements ProgramDAO {
         Connection conn = null;
         PreparedStatement st = null;
         try {
-            conn = mySqlConnectionManager.getConnection(false); // false - no auto commit
+            conn = connectionManager.getConnection(false); // false - no auto commit
             // insert program advertisings
             st = conn.prepareStatement(INSERT_PROGRAM_ADVERTISING);
             // iterate over program advertisings
@@ -120,19 +121,19 @@ public class MySqlProgramDAO implements ProgramDAO {
                 st.addBatch();
             }
             st.executeBatch();
-            mySqlConnectionManager.commit(conn); // commit transaction
+            connectionManager.commit(conn); // commit transaction
             return true;
         } catch (SQLException e) {
-            mySqlConnectionManager.rollback(conn); // rollback transaction
+            connectionManager.rollback(conn); // rollback transaction
             throw new DBException(e.getMessage());
         } finally {
-            mySqlConnectionManager.close(conn, st); // close connection and statement
+            connectionManager.close(conn, st); // close connection and statement
         }
     }
 
     @Override
     public boolean update(Program program) {
-        try (Connection conn = mySqlConnectionManager.getConnection();
+        try (Connection conn = connectionManager.getConnection();
              PreparedStatement st = conn.prepareStatement(UPDATE_PROGRAM_QUANTITY)) {
             for (Map.Entry<Advertising, Integer> programAdvertising : program.getAdvertisings().entrySet()) {
                 st.setInt(1, programAdvertising.getValue());
@@ -148,7 +149,7 @@ public class MySqlProgramDAO implements ProgramDAO {
 
     @Override
     public boolean delete(String id) {
-        try (Connection conn = mySqlConnectionManager.getConnection();
+        try (Connection conn = connectionManager.getConnection();
              PreparedStatement st = conn.prepareStatement(DELETE_PROGRAM_BY_ID)) {
             st.setLong(1, Long.parseLong(id));
             return st.executeUpdate() > 0;
@@ -158,7 +159,7 @@ public class MySqlProgramDAO implements ProgramDAO {
     }
 
     public boolean deleteAdvertisingFromProgram(long programId, long advertisingId) {
-        try (Connection conn = mySqlConnectionManager.getConnection();
+        try (Connection conn = connectionManager.getConnection();
              PreparedStatement st = conn.prepareStatement(DELETE_PROGRAM_ADVERTISING)) {
             st.setLong(1, programId);
             st.setLong(2, advertisingId);
@@ -168,6 +169,86 @@ public class MySqlProgramDAO implements ProgramDAO {
         }
     }
 
+    @Override
+    public String migrate(Program program) {
+        Connection conn = null;
+        PreparedStatement st = null;
+        try {
+            conn = connectionManager.getConnection(false); // false - no auto commit
+            // insert program
+            st = conn.prepareStatement(INSERT_PROGRAM, Statement.RETURN_GENERATED_KEYS);
+            st.setLong(1, Long.parseLong(findClientByEmailAndPassword(program.getClient().getEmail(), program.getClient().getPassword()).getId()));
+            st.setString(2, program.getCampaignTitle());
+            st.setString(3, program.getDescription());
+            st.executeUpdate();
+
+            ResultSet programKeys = st.getGeneratedKeys();
+            if (programKeys.next()) {
+                program.setId(String.valueOf(programKeys.getLong(1)));
+                st = conn.prepareStatement(INSERT_PROGRAM_ADVERTISING);
+                for (Map.Entry<Advertising, Integer> entry : program.getAdvertisings().entrySet()) {
+                    st.setLong(1, Long.parseLong(program.getId()));
+                    st.setLong(2, Long.parseLong(findAdvertisingByMultipleKeys(entry.getKey().getName(), entry.getKey().getMeasurement(), entry.getKey().getUnitPrice()).getId()));
+                    st.setInt(3, entry.getValue());
+                    st.addBatch();
+                }
+                st.executeBatch();
+            }
+            connectionManager.commit(conn); // commit transaction
+            return program.getId();
+        } catch (SQLException e) {
+            connectionManager.rollback(conn); // rollback transaction
+            throw new DBException(e.getMessage(), e);
+        } finally {
+            connectionManager.close(conn, st); // close connection and statement
+        }
+    }
+
+    private Advertising findAdvertisingByMultipleKeys(String name, String measurement, BigDecimal unitPrice) {
+        try (Connection conn = connectionManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement("SELECT a.id, c.id, c.name, a.name, a.measurement, a.unit_price, a.description, a.updated_at  FROM advertising a LEFT JOIN category c ON a.category_id = c.id " +
+                     "WHERE a.name = ? AND a.measurement = ? AND a.unit_price = ?")) {
+            stmt.setString(1, name);
+            stmt.setString(2, measurement);
+            stmt.setBigDecimal(3, unitPrice);
+            Advertising result = null;
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    result = mapProgramAdvertising(rs);
+                }
+            }
+            return result;
+        } catch (SQLException e) {
+            throw new DBException("Can't get advertising by name, measurement and unit price", e);
+        }
+    }
+
+    public Client findClientByEmailAndPassword(String email, String password) {
+        try (Connection conn = connectionManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM client WHERE email = ? AND password = ?")) {
+            stmt.setString(1, email);
+            stmt.setString(2, password);
+            try (ResultSet rs = stmt.executeQuery()) {
+                Client result = null;
+                if (rs.next()) {
+                    result = new Client.Builder().id(String.valueOf(rs.getInt("id")))
+                            .username(rs.getString("username"))
+                            .firstname(rs.getString("firstname"))
+                            .lastname(rs.getString("lastname"))
+                            .phoneNumber(rs.getString("phone_number"))
+                            .email(rs.getString("email"))
+                            .password(rs.getString("password"))
+                            .build();
+                }
+                return result;
+            }
+        } catch (SQLException e) {
+            throw new DBException("Can't get client by email and password", e);
+        }
+    }
+
+
+    // Utility methods
     private static Program mapProgram(ResultSet rs) throws SQLException {
         return new Program.Builder()
                 .id(String.valueOf(rs.getInt("id")))

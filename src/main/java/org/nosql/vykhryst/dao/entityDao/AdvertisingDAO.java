@@ -8,4 +8,6 @@ import java.util.Optional;
 
 public interface AdvertisingDAO extends DAO<Advertising> {
     Optional<Advertising> findByName(String name);
+
+    String migrate(Advertising advertising);
 }

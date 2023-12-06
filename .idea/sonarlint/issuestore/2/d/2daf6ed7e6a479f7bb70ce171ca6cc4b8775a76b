@@ -1,8 +1,0 @@
-
-b	java:S112 "FDefine and throw a dedicated exception instead of using a generic one.(ƒïÊ¨8úÊçÂ1
-b	java:S112$"FDefine and throw a dedicated exception instead of using a generic one.(ƒùì8úÊçÂ1
-{	java:S120"ZRename this package name to match the regular expression '^[a-z_]+(\.[a-z_][a-z0-9_]*)*$'.(¸Úìçşÿÿÿÿ8¤úÊçÂ1
-j
-java:S20959"HUse try-with-resources or close this "Connection" in a "finally" clause.(ÔÕ¸ñøÿÿÿÿ8ĞúÊçÂ1
-¶
-java:S6548"˜A Singleton implementation was detected. Make sure the use of the Singleton pattern is required and the implementation is the right one for the context.(ˆƒ™Ø8ÓúÊçÂ1
