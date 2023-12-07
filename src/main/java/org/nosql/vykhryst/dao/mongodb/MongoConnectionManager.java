@@ -1,5 +1,7 @@
 package org.nosql.vykhryst.dao.mongodb;
 
+import com.mongodb.ConnectionString;
+import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
@@ -14,13 +16,24 @@ public class MongoConnectionManager {
 
     private static final MongoDatabase DATABASE;
 
-    private MongoConnectionManager() {}
+    private MongoConnectionManager() {
+    }
 
     static {
-        CONNECTION_URL = PropertiesManager.getProperty("mongo.connection.url");
-        DATABASE_NAME = PropertiesManager.getProperty("mongo.database.name");
+        CONNECTION_URL = PropertiesManager.getProperty("mongo.connection.url"); // Отримання URL підключення з файлу конфігурації
+        DATABASE_NAME = PropertiesManager.getProperty("mongo.database.name"); // Отримання назви бази даних з файлу конфігурації
 
-        MongoClient mongoClient = MongoClients.create(CONNECTION_URL);
+        ConnectionString connectionString = new ConnectionString(CONNECTION_URL);
+
+        // Налаштування для підключення до репліки
+        MongoClientSettings settings = MongoClientSettings.builder()
+                .applyConnectionString(connectionString)
+                .build();
+
+        // Підключення до репліки
+        MongoClient mongoClient = MongoClients.create(settings);
+
+        // Отримання бази даних з репліки
         DATABASE = mongoClient.getDatabase(DATABASE_NAME);
     }
 

@@ -10,27 +10,29 @@ import org.nosql.vykhryst.dao.entityDao.ProgramDAO;
 import org.nosql.vykhryst.entity.*;
 
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Optional;
 
 public class TestDaoApp {
 
-    public static void main(String[] args) throws SQLException {
+    public static void main(String[] args) {
         // Initialize DAO Factory
         AbstractDaoFactory daoFactory = DaoFactory.getInstance();
 
+        TypeDAO typeDAO = TypeDAO.MYSQL;
+
 //        // Test Category
-//        testCategory(daoFactory.getCategoryDAO(TypeDAO.MONGODB));
-//
+        testCategory(daoFactory.getCategoryDAO(typeDAO));
+
 //        // Test Advertising
-//        testAdvertising(daoFactory.getAdvertisingDAO(TypeDAO.MONGODB), daoFactory.getCategoryDAO(TypeDAO.MONGODB));
-//
+        testAdvertising(daoFactory.getAdvertisingDAO(typeDAO), daoFactory.getCategoryDAO(typeDAO));
+
 //        // Test Client
-//        testClient(daoFactory.getClientDAO(TypeDAO.MONGODB));
+        testClient(daoFactory.getClientDAO(typeDAO));
 
         // Test Program
-        testProgram(daoFactory.getProgramDAO(TypeDAO.MONGODB), daoFactory.getAdvertisingDAO(TypeDAO.MONGODB));
+        testProgram(daoFactory.getProgramDAO(typeDAO), daoFactory.getAdvertisingDAO(typeDAO));
     }
 
     private static void testCategory(CategoryDAO categoryDAO) {
@@ -66,7 +68,8 @@ public class TestDaoApp {
         System.out.println("\n----- Testing Advertising -----");
 
         // Add Advertising
-        Category category = categoryDAO.findById("656e2d4a729b5ddf82394202").orElse(null);
+//        Category category = categoryDAO.findById("6570b88efec1bc4c7e89874e").orElse(null);
+        Category category = categoryDAO.findById(String.valueOf(3)).orElse(null);
         Advertising advertising = new Advertising.Builder()
                 .category(category)
                 .name("TEST New TV Ad")
@@ -101,7 +104,7 @@ public class TestDaoApp {
         System.out.println("\n----- Testing Client -----");
 
         // Add Client
-        Client client = new Client.Builder().id(Long.toString(6))
+        Client client = new Client.Builder()
                 .username("test_user")
                 .firstname("John")
                 .lastname("Snow")
@@ -115,9 +118,9 @@ public class TestDaoApp {
         Optional<Client> foundClient = clientDAO.findById(client.getId());
         System.out.println("Found Client by ID: " + foundClient.orElse(null));
 
-//        // Delete Client and Programs for MySQL
-//        System.out.println("Deleting Client and Programs: " + clientDAO.deleteClientAndPrograms(6));
-//        System.out.println("Found Client by ID: " + clientDAO.findById(6).orElse(null));
+        // Delete Client and Programs for MySQL
+        System.out.println("Deleting Client and Programs: " + clientDAO.deleteClientAndPrograms(6));
+        System.out.println("Found Client by ID: " + clientDAO.findById(String.valueOf(6)).orElse(null));
 
         // Find Client by Username
         Optional<Client> foundByUsername = clientDAO.findByUsername("test_user");
@@ -142,14 +145,17 @@ public class TestDaoApp {
 //        programDAO.findAll().forEach(System.out::println);
 
         // Find Advertising by ID
-        Advertising advertising1 = advertisingDAO.findById("6570929988098f00a0a4d8dd").orElse(null);
+//        Advertising advertising1 = advertisingDAO.findById("6570b88ffec1bc4c7e898757").orElse(null);
+        Advertising advertising1 = advertisingDAO.findById(String.valueOf(20)).orElse(null);
         System.out.println("Found Advertising 1 by ID: " + advertising1);
 
-        Advertising advertising2 = advertisingDAO.findById("6570929988098f00a0a4d8dc").orElse(null);
+//        Advertising advertising2 = advertisingDAO.findById("6570b88ffec1bc4c7e898758").orElse(null);
+        Advertising advertising2 = advertisingDAO.findById(String.valueOf(10)).orElse(null);
         System.out.println("Found Advertising 2 by ID: " + advertising2);
 
         // Add Program
-        Program program = new Program.Builder().client(new Client.Builder().id("656e22f7729b5ddf823941e5").build())
+//        Program program = new Program.Builder().client(new Client.Builder().id("6570b88ffec1bc4c7e89877b").build())
+        Program program = new Program.Builder().client(new Client.Builder().id(String.valueOf(10)).build())
                 .campaignTitle("TEST Campaign")
                 .description("TEST Description")
                 .createdAt(LocalDateTime.now())
@@ -165,18 +171,14 @@ public class TestDaoApp {
 
 
         // Add Advertising to Program for MySQL
-/*        Advertising programAdvertising = new Advertising.Builder()
-                .id("656e1f95729b8ddf823941da")
-                .unitPrice(new BigDecimal("100.00"))
-                .updatedAt(LocalDateTime.now())
-                .category(new Category("656e2d4a729b5ddf82394202", "TV"))
-                .build();
-        programDAO.saveAdvertisingToProgram(program.getId(), Map.of(programAdvertising, 20));
-        System.out.println("Added Advertising to Program (id): " + programAdvertising.getId());*/
+        Advertising advertising3 = advertisingDAO.findById(String.valueOf(13)).orElse(null);
+        programDAO.saveAdvertisingToProgram(program.getId(), Map.of(advertising3, 10));
+        System.out.println("\nAdded Advertising to Program: " + advertising3);
 
 
         // Update Program Advertising
-        Advertising advertising3 = advertisingDAO.findById("6570929988098f00a0a4d8e1").orElse(null);
+        // for MongoDB
+//        Advertising advertising3 = advertisingDAO.findById("6570b88ffec1bc4c7e89875f").orElse(null);
         program.addAdvertising(advertising3, 30);
         System.out.println("\nUpdating Program Advertising: " + programDAO.update(program));
         System.out.println("Result: " + programDAO.findById(program.getId()).orElse(null));
@@ -184,6 +186,7 @@ public class TestDaoApp {
         // Delete Advertising from Program
         program.deleteAdvertising(advertising3);
         System.out.println("\nDeleting Advertising from Program: " + programDAO.update(program));
+        System.out.println("\nDeleting Advertising from Program: " + programDAO.deleteAdvertisingFromProgram(program.getId(), advertising3.getId()));
         System.out.println("Result: " + programDAO.findById(program.getId()).orElse(null));
 
         // Delete Program

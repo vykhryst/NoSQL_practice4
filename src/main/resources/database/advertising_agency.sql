@@ -216,3 +216,11 @@ VALUES (1, 1, 3),
        (6, 12, 2),
        (2, 16, 4);
 
+
+/*SET FOREIGN_KEY_CHECKS = 0;
+TRUNCATE TABLE `client`;
+TRUNCATE TABLE `program`;
+TRUNCATE TABLE `program_advertising`;
+TRUNCATE TABLE `advertising`;
+TRUNCATE TABLE `category`;
+SET FOREIGN_KEY_CHECKS = 1;*/

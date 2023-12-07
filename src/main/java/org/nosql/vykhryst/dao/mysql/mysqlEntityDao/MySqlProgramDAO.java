@@ -106,7 +106,7 @@ public class MySqlProgramDAO implements ProgramDAO {
         }
     }
 
-    public boolean saveAdvertisingToProgram(long programId, Map<Advertising, Integer> advertising) {
+    public boolean saveAdvertisingToProgram(String programId, Map<Advertising, Integer> advertising) {
         Connection conn = null;
         PreparedStatement st = null;
         try {
@@ -115,7 +115,7 @@ public class MySqlProgramDAO implements ProgramDAO {
             st = conn.prepareStatement(INSERT_PROGRAM_ADVERTISING);
             // iterate over program advertisings
             for (Map.Entry<Advertising, Integer> entry : advertising.entrySet()) {
-                st.setLong(1, programId);
+                st.setLong(1, Long.parseLong(programId));
                 st.setLong(2, Long.parseLong(entry.getKey().getId()));
                 st.setInt(3, entry.getValue());
                 st.addBatch();
@@ -158,11 +158,11 @@ public class MySqlProgramDAO implements ProgramDAO {
         }
     }
 
-    public boolean deleteAdvertisingFromProgram(long programId, long advertisingId) {
+    public boolean deleteAdvertisingFromProgram(String programId, String advertisingId) {
         try (Connection conn = connectionManager.getConnection();
              PreparedStatement st = conn.prepareStatement(DELETE_PROGRAM_ADVERTISING)) {
-            st.setLong(1, programId);
-            st.setLong(2, advertisingId);
+            st.setLong(1, Long.parseLong(programId));
+            st.setLong(2, Long.parseLong(advertisingId));
             return st.executeUpdate() > 0;
         } catch (SQLException e) {
             throw new DBException("Can't delete advertising from program", e);

@@ -1,37 +1,35 @@
 package org.nosql.vykhryst;
 
 import org.nosql.vykhryst.dao.AbstractDaoFactory;
+import org.nosql.vykhryst.dao.DaoFactory;
 import org.nosql.vykhryst.dao.TypeDAO;
 import org.nosql.vykhryst.dao.entityDao.ClientDAO;
-import org.nosql.vykhryst.dao.DaoFactory;
+import org.nosql.vykhryst.dao.mongodb.mongoEntityDao.MongoClientDAO;
 import org.nosql.vykhryst.entity.Client;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 
-public class ExperimentApp {
+public class TestReplicaApp {
     public static void main(String[] args) {
+
         // Initialize DAO Factory
         AbstractDaoFactory daoFactory = DaoFactory.getInstance();
+
         ClientDAO mongoClientDAO = daoFactory.getClientDAO(TypeDAO.MONGODB);
-        ClientDAO mySqlClientDAO = daoFactory.getClientDAO(TypeDAO.MYSQL);
 
-        int count = 500000;
+        int count = 10000;
 
-        // Test MongoDB
-        System.out.println("\n--- Test MongoDB ---");
-        testSave(mongoClientDAO, count);
-        testFindAll(mongoClientDAO);
+        System.out.println("\n--- Test INSERT ---");
+        testInsert((MongoClientDAO) mongoClientDAO, count);
 
-        // Test MySQL
-        System.out.println("\n--- Test MySQL ---");
-        testSave(mySqlClientDAO, count);
-        testFindAll(mySqlClientDAO);
+        System.out.println("\n--- Test SELECT ---");
+        testSelect(mongoClientDAO);
+
     }
 
-
-    private static void testSave(ClientDAO clientDAO, int count) {
+    private static void testInsert(MongoClientDAO clientDAO, int count) {
         // Insert data
         Instant start = Instant.now();
         for (int i = 0; i < count; i++) {
@@ -42,14 +40,14 @@ public class ExperimentApp {
             client.setPhoneNumber("tel" + i);
             client.setEmail("email" + i);
             client.setPassword("password" + i);
-            clientDAO.save(client);
+            clientDAO.insertWithReplica(client);
         }
         Instant end = Instant.now();
         System.out.println("Insertion time for " + count + " records: "
                 + Duration.between(start, end).toMillis() + " ms");
     }
 
-    private static void testFindAll(ClientDAO clientDAO) {
+    private static void testSelect(ClientDAO clientDAO) {
         // Find all data
         Instant start = Instant.now();
         List<Client> clients = clientDAO.findAll();
@@ -57,6 +55,4 @@ public class ExperimentApp {
         System.out.println("Reading time for " + clients.size() + " records: "
                 + Duration.between(start, end).toMillis() + " ms");
     }
-
-
 }

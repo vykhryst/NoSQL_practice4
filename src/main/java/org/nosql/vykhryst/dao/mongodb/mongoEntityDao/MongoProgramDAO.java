@@ -12,6 +12,7 @@ import org.nosql.vykhryst.entity.Client;
 import org.nosql.vykhryst.entity.Program;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.util.*;
 
 import static java.time.ZoneOffset.UTC;
@@ -59,6 +60,17 @@ public class MongoProgramDAO implements ProgramDAO {
         programCollection.insertOne(doc);
         program.setId(doc.getObjectId("_id").toString());
         return program.getId();
+    }
+
+
+    @Override
+    public boolean saveAdvertisingToProgram(String programId, Map<Advertising, Integer> advertising) {
+        return false;
+    }
+
+    @Override
+    public boolean deleteAdvertisingFromProgram(String programId, String advertisingId) {
+        return false;
     }
 
     @Override

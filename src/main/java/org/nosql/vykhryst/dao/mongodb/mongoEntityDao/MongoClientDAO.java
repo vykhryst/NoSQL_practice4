@@ -15,6 +15,7 @@ public class MongoClientDAO implements ClientDAO {
     private final MongoCollection<Document> clientCollection;
 
     public MongoClientDAO() {
+//        this.clientCollection = MongoConnectionManager.getCollection("client").withWriteConcern(WriteConcern.UNACKNOWLEDGED);
         this.clientCollection = MongoConnectionManager.getCollection("client");
     }
 
@@ -41,6 +42,30 @@ public class MongoClientDAO implements ClientDAO {
         entity.setId(doc.getObjectId("_id").toString());
         return entity.getId();
     }
+
+    public String insertWithReplica(Client client) {
+        int maxRetries = 3;
+        int retryCount = 0;
+        while (retryCount < maxRetries) {
+            try {
+                Document doc = mapClientToDocument(client);
+                clientCollection.insertOne(doc);
+                client.setId(doc.getObjectId("_id").toString());
+                return client.getId();
+            } catch (Exception e) {
+                retryCount++;
+                System.err.println("Error occurred while saving client. Retrying in 1 second...");
+                try {
+                    Thread.sleep(1000); // Затримка в 1 секунду перед наступною спробою запису
+                } catch (InterruptedException interruptedException) {
+                    Thread.currentThread().interrupt();
+                    System.err.println("Thread interrupted while waiting for retry.");
+                }
+            }
+        }
+        throw new RuntimeException("Max retry attempts reached. Failed to save client.");
+    }
+
 
     @Override
     public boolean update(Client entity) {
