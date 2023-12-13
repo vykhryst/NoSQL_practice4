@@ -1,4 +1,4 @@
-package org.nosql.vykhryst;
+package org.nosql.vykhryst.testApps;
 
 import org.nosql.vykhryst.dao.DaoFactory;
 import org.nosql.vykhryst.dao.TypeDAO;

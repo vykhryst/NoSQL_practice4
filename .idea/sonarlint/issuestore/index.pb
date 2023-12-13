@@ -37,8 +37,6 @@ l
 <src/main/java/org/nosql/vykhryst/dao/AbstractDaoFactory.java,5\b\5b2d056aabd030a24ceeac16d7ecb5b71122b038
 f
 6src/main/java/org/nosql/vykhryst/util/DBException.java,2\1\2146ff43780f189f091635024e20292a1e7235d7
-c
-3src/main/java/org/nosql/vykhryst/ExperimentApp.java,f\0\f0cd91efae7151f8bf34a71bbe857407d6e53a5a
 g
 7src/test/java/org/nosql/vykhryst/ExperimentAppTest.java,0\e\0e247952ea61c4ccfb8fdbecb69a31b3926b285d
 
@@ -51,8 +49,6 @@ v
 Fsrc/main/java/org/nosql/vykhryst/dao/mysql/MySqlConnectionManager.java,5\c\5cfdad21fe2b69174f290acccaa78734f44879b5
 l
 <src/main/java/org/nosql/vykhryst/util/PropertiesManager.java,2\1\2138e8367713cee6d11ba8ce0363bab2bdb746d8
-`
-0src/main/java/org/nosql/vykhryst/TestDaoApp.java,b\c\bc8159d6750143fb75d7f0e46ff54c3e8b7c3f86
 d
 4src/main/java/org/nosql/vykhryst/dao/DaoFactory.java,1\e\1ee02ba26a22988bbe186a56a15eb015199bba3a
 €
@@ -67,5 +63,11 @@ Tsrc/main/java/org/nosql/vykhryst/dao/mongodb/mongoEntityDao/MongoAdvertisingDAO
 Nsrc/main/java/org/nosql/vykhryst/dao/mysql/mysqlEntityDao/MySqlProgramDAO.java,e\3\e35ad3cb3493f655884f8d2bb065fb95294402e0
 
 Osrc/main/java/org/nosql/vykhryst/dao/mysql/mysqlEntityDao/MySqlCategoryDAO.java,7\4\744bcbef6f9c57362973ea571badf377e518ebb9
-b
-2src/main/java/org/nosql/vykhryst/DataMigrator.java,8\9\89f7a3133f503666e5a2643eb9ab898b1e1fb85b
+k
+;src/main/java/org/nosql/vykhryst/testApps/DataMigrator.java,c\9\c9a38e702485f61a57d29147f0310cf7201e9532
+l
+<src/main/java/org/nosql/vykhryst/testApps/ExperimentApp.java,0\2\02954b6e27db97bc6c2b7668f1fc36281213ebdd
+m
+=src/main/java/org/nosql/vykhryst/testApps/TestReplicaApp.java,c\5\c50d8c154014971b2ee1209c7f2130c70edcd4fd
+i
+9src/main/java/org/nosql/vykhryst/testApps/TestDaoApp.java,2\3\238da026c91b6aafd7e962122cb0a7c670807f70

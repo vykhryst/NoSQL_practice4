@@ -1,7 +1,11 @@
 package org.nosql.vykhryst.dao.mongodb.mongoEntityDao;
 
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Accumulators;
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Projections;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.types.Decimal128;
 import org.bson.types.ObjectId;
 import org.nosql.vykhryst.dao.entityDao.ProgramDAO;
@@ -12,9 +16,13 @@ import org.nosql.vykhryst.entity.Client;
 import org.nosql.vykhryst.entity.Program;
 
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
+import static com.mongodb.client.model.Accumulators.sum;
+import static com.mongodb.client.model.Aggregates.*;
+import static com.mongodb.client.model.Aggregates.limit;
+import static com.mongodb.client.model.Sorts.descending;
 import static java.time.ZoneOffset.UTC;
 
 public class MongoProgramDAO implements ProgramDAO {
@@ -60,6 +68,75 @@ public class MongoProgramDAO implements ProgramDAO {
         programCollection.insertOne(doc);
         program.setId(doc.getObjectId("_id").toString());
         return program.getId();
+    }
+
+
+    // Запит 3: Вартість кожної рекламної кампанії
+    public Map<String, BigDecimal> aggregateCalculateProgramCost() {
+        Map<String, BigDecimal> result = new HashMap<>();
+        List<Bson> pipeline = Arrays.asList(
+                Aggregates.unwind("$advertisingList"),
+                Aggregates.project(
+                        Projections.fields(
+                                Projections.include("campaignTitle"),
+                                Projections.computed("cost",
+                                        new Document("$multiply",
+                                                Arrays.asList("$advertisingList.advertising.unitPrice", "$advertisingList.quantity")
+                                        )
+                                )
+                        )
+                ),
+                Aggregates.group("$campaignTitle", Accumulators.sum("totalCost", "$cost"))
+        );
+
+        programCollection.aggregate(pipeline).forEach(doc ->
+                result.put(doc.getString("_id"), doc.get("totalCost", Decimal128.class).bigDecimalValue())
+        );
+        return result;
+    }
+
+    public Map<String, BigDecimal> calculateProgramCost() {
+        Map<String, BigDecimal> campaignCosts = new HashMap<>();
+        for (Document doc : programCollection.find()) {
+            String campaignTitle = doc.getString("campaignTitle");
+            List<Document> advertisingList = (List<Document>) doc.get("advertisingList");
+            for (Document ad : advertisingList) {
+                BigDecimal unitPrice = ad.get("advertising", Document.class).get("unitPrice", Decimal128.class).bigDecimalValue();
+                Integer quantity = ad.getInteger("quantity");
+                campaignCosts.put(campaignTitle, campaignCosts.getOrDefault(campaignTitle, BigDecimal.valueOf(0.0))
+                        .add(unitPrice.multiply(BigDecimal.valueOf(quantity))));
+            }
+        }
+        return campaignCosts;
+    }
+
+    // Запит 5: Отримання найбільш популярну категорію реклами за кількістю рекламних програм
+    public Map<String, Integer> aggregateGetMostPopularAdCategories(int limit) {
+        Map<String, Integer> result = new HashMap<>();
+        programCollection.aggregate(
+                        List.of(
+                                unwind("$advertisingList"),
+                                group("$advertisingList.advertising.category.name", sum("count", 1)),
+                                sort(descending("count")),
+                                limit(limit)
+                        ))
+                .forEach(doc -> result.put(doc.getString("_id"), doc.getInteger("count")));
+        return result;
+    }
+
+    public Map<String, Integer> getMostPopularAdCategories(int limit) {
+        Map<String, Integer> categoryCounts = new HashMap<>();
+        for (Document doc : programCollection.find()) {
+            List<Document> advertisingList = (List<Document>) doc.get("advertisingList");
+            for (Document ad : advertisingList) {
+                String category = ad.get("advertising", Document.class).get("category", Document.class).getString("name");
+                categoryCounts.put(category, categoryCounts.getOrDefault(category, 0) + 1);
+            }
+        }
+        return categoryCounts.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .limit(limit)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
 
